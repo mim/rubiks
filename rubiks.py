@@ -125,6 +125,41 @@ def solve(cube, goal=None):
             q.put(new_cube)
 
 
+def solve_pq(cube, goal=None):
+    if goal is None:
+        goal = Rubiks2x2()
+
+    s = Status()
+    q = queue.PriorityQueue()
+    start = Rubiks2x2(cube.faces)
+    q.put(PriorityItem(start, goal))
+    visited = set([start])
+    
+    while not q.empty():
+        s.tick()
+        latest = q.get().item
+        for t in range(len(transformations)):
+            new_cube = latest.transform(t)
+            if new_cube == goal:
+                print("Found it!")
+                print_history(new_cube)
+                return new_cube
+            if new_cube not in visited:
+                q.put(PriorityItem(new_cube, goal))
+                visited.add(new_cube)
+
+
+class PriorityItem:
+    """Lower is better.
+    """
+    def __init__(self, item, goal):
+        self.item = item
+        self.goal = goal
+        self.priority = item.dist(goal)
+    def __lt__(self, other):
+        return self.priority < other.priority
+
+            
 def print_history(cube):
     print(cube)
     while cube.parent_move is not None:
