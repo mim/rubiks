@@ -255,13 +255,7 @@ class Status:
             
 def main():
     "Pass number of randomization steps as only argument on command-line"
-
-    if len(sys.argv) > 1:
-        print(sys.argv)
-        N = int(sys.argv[1])
-    else:
-        N = 60
-        
+    N = int(sys.argv[1]) if len(sys.argv) > 1 else 60        
     start = randomize(Rubiks2x2(), N)
     print(start)
     solution = solve_2way(start)
