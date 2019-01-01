@@ -4,6 +4,7 @@
 
 import queue
 import numpy as np
+import sys
 
 
 def permutation_matrix(N, srcs, dsts):
@@ -29,10 +30,13 @@ def create_matrices():
         
     transformations = [front, right, top, top.T, right.T, front.T]
     #transformations = [identity, front, right, top, top.T, right.T, front.T]
-    return transformations
+
+    names = ['front', 'right', 'top', 'top inverse', 'right inverse', 'front inverse']
+    
+    return transformations, names
 
 
-transformations = create_matrices()
+transformations, transform_names = create_matrices()
 projection = 100000 * np.random.randn(1, 24)
 
 
@@ -203,7 +207,7 @@ class PriorityItem:
 def print_history(cube):
     print(cube)
     while cube.parent_move is not None:
-        print("Move:", cube.parent_move)
+        print("Move:", transform_names[cube.parent_move])
         cube = cube.parent
         print(cube)
 
@@ -220,8 +224,15 @@ class Status:
             
             
 def main():
-    start = Rubiks2x2()
+    if len(sys.argv) > 1:
+        print(sys.argv)
+        N = int(sys.argv[1])
+    else:
+        N = 12
+        
+    start = randomize(Rubiks2x2(), N)
     print(start)
+    solution = solve_2way(start)
     
 
 if __name__ == '__main__':
