@@ -102,9 +102,14 @@ class Rubiks2x2:
     
 
 def randomize(cube, n_steps):
-    for n in range(n_steps):
+    visited = set([cube])
+    while n_steps > 0:
         t = np.random.randint(len(transformations))
-        cube = cube.transform(t)
+        new_cube = cube.transform(t)
+        if new_cube not in visited:
+            cube = new_cube
+            n_steps -= 1
+            visited.add(cube)
     return cube
 
 
