@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+
 """
-2x2 Rubiks cube model
+2x2 Rubiks cube model and solver
 """
 
 import queue
@@ -252,11 +254,13 @@ class Status:
             
             
 def main():
+    "Pass number of randomization steps as only argument on command-line"
+
     if len(sys.argv) > 1:
         print(sys.argv)
         N = int(sys.argv[1])
     else:
-        N = 12
+        N = 60
         
     start = randomize(Rubiks2x2(), N)
     print(start)
