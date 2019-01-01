@@ -125,6 +125,46 @@ def solve(cube, goal=None):
             q.put(new_cube)
 
 
+def solve_2way(cube, goal=None):
+    if goal is None:
+        goal = Rubiks2x2()
+
+    s = Status()
+
+    start = Rubiks2x2(cube.faces)
+    srcq = queue.Queue()
+    srcq.put(start)
+
+    end = Rubiks2x2(goal.faces)
+    dstq = queue.Queue()
+    dstq.put(end)
+
+    goal_set = {end:end}
+    
+    while not srcq.empty():
+        N = len(transformations)
+        s.tick()
+        latest_dst = dstq.get()
+        for t in range(N):
+            new_dst = latest_dst.transform(t)
+            goal_set[new_dst] = new_dst
+            dstq.put(new_dst)
+
+        latest_src = srcq.get()
+        for t in range(N):
+            new_src = latest_src.transform(t)
+            if new_src in goal_set:
+                print("Found it!")
+                remainder = goal_set[new_src]
+                while remainder.parent:
+                    new_src = new_src.transform(N - remainder.parent_move - 1)
+                    remainder = remainder.parent
+                print_history(new_src)
+                return new_src
+            srcq.put(new_src)
+    
+
+            
 def solve_pq(cube, goal=None):
     if goal is None:
         goal = Rubiks2x2()
