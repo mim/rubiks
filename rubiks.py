@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 2x2 Rubiks cube model and solver
 """
@@ -14,27 +13,30 @@ def permutation_matrix(N, srcs, dsts):
     column vector takes entries at indices srcs to dsts.
     """
     M = np.identity(N, dtype='int64')
-    M[srcs,srcs] = 0
-    M[dsts,srcs] = 1
+    M[srcs, srcs] = 0
+    M[dsts, srcs] = 1
     return M
 
 
 def create_matrices():
     identity = permutation_matrix(24, [], [])
-        
+
     # Clockwise rotations
-    front = permutation_matrix(24, [0,1,2,3,19,18,4,7,21,20,14,13],
-                               [1,2,3,0,4,7,21,20,14,13,19,18])
-    right = permutation_matrix(24, [4,5,6,7,18,17,8,11,22,21,2,1],
-                               [5,6,7,4,8,11,22,21,2,1,18,17])
-    top   = permutation_matrix(24, [16,17,18,19,4,5,8,9,12,13,0,1],
-                               [17,18,19,16,0,1,4,5,8,9,12,13])
-        
+    front = permutation_matrix(24, [0, 1, 2, 3, 19, 18, 4, 7, 21, 20, 14, 13],
+                               [1, 2, 3, 0, 4, 7, 21, 20, 14, 13, 19, 18])
+    right = permutation_matrix(24, [4, 5, 6, 7, 18, 17, 8, 11, 22, 21, 2, 1],
+                               [5, 6, 7, 4, 8, 11, 22, 21, 2, 1, 18, 17])
+    top = permutation_matrix(24, [16, 17, 18, 19, 4, 5, 8, 9, 12, 13, 0, 1],
+                             [17, 18, 19, 16, 0, 1, 4, 5, 8, 9, 12, 13])
+
     transformations = [front, right, top, top.T, right.T, front.T]
     #transformations = [identity, front, right, top, top.T, right.T, front.T]
 
-    names = ['front', 'right', 'top', 'top inverse', 'right inverse', 'front inverse']
-    
+    names = [
+        'front', 'right', 'top', 'top inverse', 'right inverse',
+        'front inverse'
+    ]
+
     return transformations, names
 
 
@@ -74,8 +76,11 @@ class Rubiks2x2:
         if faces is None:
             #                 front    right    back     left     top      bottom
             #                 0 1 2 3  4 5 6 7  8 91011 12131415 16171819 20212223
-            faces = np.array([0,0,0,0, 1,1,1,1, 2,2,2,2, 3,3,3,3, 4,4,4,4, 5,5,5,5])
-            faces = faces[:,None]
+            faces = np.array([
+                0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5,
+                5, 5, 5
+            ])
+            faces = faces[:, None]
         self.faces = faces
         self.parent = parent
         self.parent_move = parent_move
@@ -85,30 +90,26 @@ class Rubiks2x2:
 
     def dist(self, other):
         return (self.faces != other.faces).sum()
-    
+
     def __repr__(self):
         strings = [str(n[0]) for n in self.faces]
-        return ("(" + strings[16] + "," + strings[17] + ")\n" +
-                "(" + strings[19] + "," + strings[18] + ")\n" +
-                "  |\n" +
-                "(" + strings[0] + "," + strings[1] + ") _ " +
-                "(" + strings[4] + "," + strings[5] + ") _ " +
-                "(" + strings[8] + "," + strings[9] + ") _ " +
-                "(" + strings[12] + "," + strings[13] + ")\n" +
-                "(" + strings[3] + "," + strings[2] + ")   " +
-                "(" + strings[7] + "," + strings[6] + ")   " +
-                "(" + strings[11] + "," + strings[10] + ")   " +
-                "(" + strings[15] + "," + strings[14] + ")\n" +
-                "  |\n" +
-                "(" + strings[20] + "," + strings[21] + ")\n" +
-                "(" + strings[23] + "," + strings[22] + ")\n")
+        return ("(" + strings[16] + "," + strings[17] + ")\n" + "(" +
+                strings[19] + "," + strings[18] + ")\n" + "  |\n" + "(" +
+                strings[0] + "," + strings[1] + ") _ " + "(" + strings[4] + ","
+                + strings[5] + ") _ " + "(" + strings[8] + "," + strings[9] +
+                ") _ " + "(" + strings[12] + "," + strings[13] + ")\n" + "(" +
+                strings[3] + "," + strings[2] + ")   " + "(" + strings[7] +
+                "," + strings[6] + ")   " + "(" + strings[11] + "," +
+                strings[10] + ")   " + "(" + strings[15] + "," + strings[14] +
+                ")\n" + "  |\n" + "(" + strings[20] + "," + strings[21] +
+                ")\n" + "(" + strings[23] + "," + strings[22] + ")\n")
 
     def __hash__(self):
         return int(projection @ self.faces)
 
     def __eq__(self, other):
         return np.all(self.faces == other.faces)
-    
+
 
 def randomize(cube, n_steps):
     """Take n_steps random moves from cube. Avoid already-visited configurations.
@@ -134,7 +135,7 @@ def solve(cube, goal=None):
     q = queue.Queue()
     start = Rubiks2x2(cube.faces)
     q.put(start)
-    
+
     while not q.empty():
         s.tick()
         latest = q.get()
@@ -165,8 +166,8 @@ def solve_2way(cube, goal=None):
     dstq = queue.Queue()
     dstq.put(end)
 
-    goal_set = {end:end}
-    
+    goal_set = {end: end}
+
     while not srcq.empty():
         N = len(transformations)
         s.tick()
@@ -188,7 +189,7 @@ def solve_2way(cube, goal=None):
                 print_history(new_src)
                 return new_src
             srcq.put(new_src)
-    
+
 
 def solve_pq(cube, goal=None):
     """Use a priority queue to find best path where priority is the number
@@ -204,7 +205,7 @@ def solve_pq(cube, goal=None):
     start = Rubiks2x2(cube.faces)
     q.put(PriorityItem(start, goal))
     visited = set([start])
-    
+
     while not q.empty():
         s.tick()
         latest = q.get().item
@@ -222,14 +223,16 @@ def solve_pq(cube, goal=None):
 class PriorityItem:
     """Lower is better.
     """
+
     def __init__(self, item, goal):
         self.item = item
         self.goal = goal
         self.priority = item.dist(goal)
+
     def __lt__(self, other):
         return self.priority < other.priority
 
-            
+
 def print_history(cube):
     print(cube)
     n_steps = 0
@@ -240,27 +243,28 @@ def print_history(cube):
         print(cube)
     print("Total", n_steps, "steps")
 
-            
+
 class Status:
     "Print out periods in columns of 80."
+
     def __init__(self):
         self.counter = 0
+
     def tick(self):
         self.counter += 1
         if self.counter % 80 == 0:
             print('.')
         else:
             print('.', end="")
-            
-            
+
+
 def main():
     "Pass number of randomization steps as only argument on command-line"
-    N = int(sys.argv[1]) if len(sys.argv) > 1 else 60        
+    N = int(sys.argv[1]) if len(sys.argv) > 1 else 60
     start = randomize(Rubiks2x2(), N)
     print(start)
     solution = solve_2way(start)
-    
+
 
 if __name__ == '__main__':
     main()
-    
