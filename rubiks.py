@@ -42,7 +42,9 @@ projection = 100000 * np.random.randn(1, 24)
 
 class Rubiks2x2:
     def __init__(self, faces=None, parent=None, parent_move=None):
-        """Each face has 2x2 array of squares, so there are 24 squares
+        """Immutable representation of a 2x2 rubiks cube configuration
+
+        Each face has 2x2 array of squares, so there are 24 squares
         total. There are six colors, represented by numbers
         0-5. Arrange of faces is:
         
@@ -61,6 +63,11 @@ class Rubiks2x2:
            |
         (20,21)
         (23,22)
+
+        Also includes parent configuration and move to get there for
+        backtracking purposes.  These are not considered in hashing
+        and equality testing, though.
+
         """
         if faces is None:
             #                 front    right    back     left     top      bottom
@@ -102,6 +109,8 @@ class Rubiks2x2:
     
 
 def randomize(cube, n_steps):
+    """Take n_steps random moves from cube. Avoid already-visited configurations.
+    """
     visited = set([cube])
     while n_steps > 0:
         t = np.random.randint(len(transformations))
@@ -114,6 +123,8 @@ def randomize(cube, n_steps):
 
 
 def solve(cube, goal=None):
+    """Breadth-first search from start state to goal state.
+    """
     if goal is None:
         goal = Rubiks2x2()
 
@@ -135,6 +146,10 @@ def solve(cube, goal=None):
 
 
 def solve_2way(cube, goal=None):
+    """Breadth-first search from both start state and goal state
+    simultaneously.  Works best.
+
+    """
     if goal is None:
         goal = Rubiks2x2()
 
@@ -173,8 +188,12 @@ def solve_2way(cube, goal=None):
             srcq.put(new_src)
     
 
-            
 def solve_pq(cube, goal=None):
+    """Use a priority queue to find best path where priority is the number
+    of squares two configurations have in common.  This turns out not
+    to be a good metric, so this method doesn't work very well.
+
+    """
     if goal is None:
         goal = Rubiks2x2()
 
@@ -211,13 +230,17 @@ class PriorityItem:
             
 def print_history(cube):
     print(cube)
+    n_steps = 0
     while cube.parent_move is not None:
-        print("Move:", transform_names[cube.parent_move])
+        print(f"Came from move: '{transform_names[cube.parent_move]}' on")
         cube = cube.parent
+        n_steps += 1
         print(cube)
+    print("Total", n_steps, "steps")
 
             
 class Status:
+    "Print out periods in columns of 80."
     def __init__(self):
         self.counter = 0
     def tick(self):
